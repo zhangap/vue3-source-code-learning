@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>渲染器的设计3-事件冒泡</title>
+</head>
+<body>
+<div id="app"></div>
+</body>
+</html>
+<script src="./lib/reactivity.global.js"></script>
+<script type="module">
+    import {renderer} from "./js/render.js";
+
+    const {effect, ref} = VueReactivity;
+
+    const bol = ref(false)
+
+    effect(() => {
+        const vnode = {
+            type: 'div',
+            props: bol.value ? {
+                onClick() {
+                    debugger
+                    alert('父元素clicked')
+                }
+            } : {},
+            children: [
+                {
+                    type: 'p',
+                    props: {
+                        onClick() {
+                            debugger
+                            bol.value = true
+                        }
+                    },
+                    children: 'text'
+                },
+            ]
+        }
+        renderer.render(vnode, document.querySelector('#app'));
+    })
+</script>

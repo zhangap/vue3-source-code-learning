@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>DOM复用和key的作用</title>
+</head>
+<body>
+    <div id="app"></div>
+</body>
+</html>
+<script type="module">
+    import {renderer} from "./js/render.js";
+
+    const oldVNode = {
+        type: 'div',
+        children: [
+            {type: 'p', children: '1', key: 1, props: {id: '001'}},
+            {type: 'p', children: '2', key: 2, props: {id: '002'}},
+            {type: 'p', children: 'hello', key: 3, props: {id: '003'} },
+        ]
+    }
+    const newVNode1 = {
+        type: 'div',
+        children: [
+            {type: 'p', children: 'world', key: 3},
+            {type: 'p', children: '11', key: 1},
+            {type: 'p', children: '33', key: 4},
+            {type: 'p', children: '22', key: 2},
+        ]
+    }
+    // 新增元素
+    const newVNode2 = {
+        type: 'div',
+        children: [
+            {type: 'p', children: 'world', key: 3},
+            {type: 'p', children: '11', key: 1},
+            {type: 'p', children: '33', key: 4},
+            {type: 'p', children: '22', key: 2},
+        ]
+    }
+    // 移除不存在的元素
+    const newVNode3 = {
+        type: 'div',
+        children: [
+            {type: 'p', children: 'world', key: 3},
+            {type: 'p', children: '22', key: 2},
+        ]
+    }
+    renderer.render(oldVNode, document.querySelector('#app'));
+    setTimeout(() => {
+        debugger
+        renderer.render(newVNode3, document.querySelector('#app'));
+    },3000)
+</script>

@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>双端diff算法</title>
+</head>
+<body>
+    <div id="app"></div>
+</body>
+</html>
+<script type="module">
+    import {renderer} from "./js/render.double.ended.js";
+
+    // const newVNode = {
+    //     type: 'div',
+    //     children: [
+    //         {type: 'p', children: 'p-1', key:1},
+    //         {type: 'p', children: 'p-2', key:2},
+    //         {type: 'p', children: 'p-3', key:3},
+    //         {type: 'p', children: 'p-4', key:4},
+    //     ]
+    // };
+    //
+    // const newVNode2 = {
+    //     type: 'div',
+    //     children: [
+    //         {type: 'p', children: 'p-4', key:4},
+    //         {type: 'p', children: 'p-2', key:2},
+    //         {type: 'p', children: 'p-1', key:1},
+    //         {type: 'p', children: 'p-3', key:3},
+    //     ]
+    // }
+
+    //新增节点演示
+    // const newVNode = {
+    //     type: 'div',
+    //     children: [
+    //         {type: 'p', children: 'p-1', key: 1},
+    //         {type: 'p', children: 'p-2', key: 2},
+    //         {type: 'p', children: 'p-3', key: 3},
+    //     ]
+    // }
+    //
+    // const newVNode2 = {
+    //     type: 'div',
+    //     children: [
+    //         {type: 'p', children: 'p-4', key: 4},
+    //         {type: 'p', children: 'p-1', key: 1},
+    //         {type: 'p', children: 'p-2', key: 2},
+    //         {type: 'p', children: 'p-3', key: 3},
+    //     ]
+    // }
+
+    // 移除节点演示
+    const newVNode = {
+        type: 'div',
+        children: [
+            {type: 'p', children: 'p-1', key: 1},
+            {type: 'p', children: 'p-2', key: 2},
+            {type: 'p', children: 'p-3', key: 3},
+        ]
+    }
+
+    const newVNode2 = {
+        type: 'div',
+        children: [
+            {type: 'p', children: 'p-1', key: 1},
+            {type: 'p', children: 'p-3', key: 3},
+        ]
+    }
+
+    renderer.render(newVNode, document.querySelector('#app'));
+
+    setTimeout(() => {
+        debugger
+        renderer.render(newVNode2, document.querySelector('#app'));
+    }, 3000)
+</script>

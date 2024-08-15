@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>快速diff算法</title>
+</head>
+<body>
+    <div id="app"></div>
+</body>
+</html>
+<script type="module">
+    import {renderer} from "./js/render.fast.js";
+    // 新增节点演示
+    // const newVNode = {
+    //     type: 'div',
+    //     children: [
+    //         {type: 'p', children: 'p-1', key:1},
+    //         {type: 'p', children: 'p-2', key:2},
+    //         {type: 'p', children: 'p-3', key:3},
+    //     ]
+    // };
+    // const newVNode2 = {
+    //     type: 'div',
+    //     children: [
+    //         {type: 'p', children: 'p-11', key:1},
+    //         {type: 'p', children: 'p-4', key:4},
+    //         {type: 'p', children: 'p-22', key:2},
+    //         {type: 'p', children: 'p-33', key:3},
+    //     ]
+    // };
+
+    // 删除节点演示
+    // const newVNode = {
+    //     type: 'div',
+    //     children: [
+    //         {type: 'p', children: 'p-1', key:1},
+    //         {type: 'p', children: 'p-2', key:2},
+    //         {type: 'p', children: 'p-3', key:3},
+    //     ]
+    // };
+    // const newVNode2 = {
+    //     type: 'div',
+    //     children: [
+    //         {type: 'p', children: 'p-11', key:1},
+    //         {type: 'p', children: 'p-33', key:3},
+    //     ]
+    // };
+
+    //判断是否需要进行dom移动操作
+    const newVNode = {
+        type: 'div',
+        children: [
+            {type: 'p', children: 'p-1', key:1},
+            {type: 'p', children: 'p-2', key:2},
+            {type: 'p', children: 'p-3', key:3},
+            {type: 'p', children: 'p-4', key:4},
+            {type: 'p', children: 'p-6', key:6},
+            {type: 'p', children: 'p-5', key:5},
+        ]
+    };
+    const newVNode2 = {
+        type: 'div',
+        children: [
+            {type: 'p', children: 'p-11', key:1},
+            {type: 'p', children: 'p-33', key:3},
+            {type: 'p', children: 'p-44', key:4},
+            {type: 'p', children: 'p-22', key:2},
+            {type: 'p', children: 'p-77', key:7},
+            {type: 'p', children: 'p-55', key:5},
+        ]
+    };
+    renderer.render(newVNode, document.querySelector('#app'));
+
+    setTimeout(() => {
+        renderer.render(newVNode2, document.querySelector('#app'))
+    }, 3000)
+</script>

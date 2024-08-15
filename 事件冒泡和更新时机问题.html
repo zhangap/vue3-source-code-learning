@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script src="./lib/reactivity.global.js"></script>
+</head>
+<body>
+    <div id="app"></div>
+</body>
+</html>
+<script type="module">
+    const {effect, ref} = VueReactivity;
+
+    const bol = ref(false);
+
+    effect(() => {
+        const vnode = {
+            type: 'div',
+            props: bol.value ? {
+                onClick() {
+                    alert('父元素 clicked')
+                }
+            }: {},
+            children: [
+                {
+                    type: 'p',
+                    props: {
+                        onCLick() {
+                            bol.value = true
+                        }
+                    },
+                    children: 'children text'
+                }
+            ]
+        }
+    })
+
+
+    function renderer() {
+        function render(vnode, container) {
+            const {type, props,children} = vnode;
+            const el = document.createElement(type);
+            if(props) {
+                for(const key in props) {
+                    if(key in el) {
+                        el[key] = props[key]
+                    } else {
+                        el.setAttribute(key, props[key])
+                    }
+                }
+            }
+        }
+        return {
+            render
+        }
+    }
+</script>

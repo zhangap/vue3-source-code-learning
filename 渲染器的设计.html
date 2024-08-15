@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script src="./lib/reactivity.global.js"></script>
+</head>
+<body>
+    <div id="app"></div>
+    <button id="btn">count++</button>
+    <input type="text" value="123" id="txt">
+</body>
+</html>
+<script type="module">
+const {effect, ref} = VueReactivity;
+
+function renderer(domString, container) {
+    container.innerHTML = domString;
+}
+
+const count = ref(1);
+effect(() => {
+    renderer(`<h1>${count.value}</h1>`, document.querySelector('#app'))
+})
+
+document.querySelector('#btn').onclick = () => {
+    count.value++;
+
+    const oValue = document.querySelector('#txt');
+    console.log(oValue.value, 'attr' + oValue.getAttribute('value'), oValue.defaultValue)
+}
+
+function createRenderer() {
+    function patch(n1,n2,container) {
+        //
+    }
+    function render(vnode, container) {
+        if(vnode) {
+            patch(container._vnode, vnode, container);
+        } else {
+            if(container._vnode) {
+                container.innerHTML = ''
+            }
+        }
+        container._vnode = vnode;
+    }
+
+    return {
+        render
+    }
+}
+</script>
