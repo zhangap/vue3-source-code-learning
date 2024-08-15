@@ -25,6 +25,10 @@
         },
         mounted() {
             console.log('mounted钩子函数执行');
+            setTimeout(() => {
+                this.foo = '你好，世界';
+            },1000)
+
         },
         render() {
             return {
