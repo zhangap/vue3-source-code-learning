@@ -2,9 +2,56 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <title>组件的实现原理</title>
 </head>
 <body>
-
+<div id="app"></div>
 </body>
 </html>
+<script src="./lib/reactivity.global.js"></script>
+<script type="module">
+    import {renderer} from "./js/render.fast.component.js";
+
+    const MyComponent = {
+        name: 'MyComponent',
+        props: {
+          title:String,
+        },
+        // 用data函数来定义组件自身的状态
+        data() {
+          return {
+              foo: 'hello world'
+          }
+        },
+        mounted() {
+            console.log('mounted钩子函数执行');
+        },
+        render() {
+            return {
+                type: 'div',
+                children: `foo的值是：${this.foo}; title=${this.title}`
+            }
+        }
+    };
+
+
+    const CompVNode = {
+        type: MyComponent,
+        props: {
+            title: 'A Big Title'
+        }
+    }
+
+    const CompVNode2 = {
+        type: MyComponent,
+        props: {
+            title: 'A Small Title'
+        }
+    }
+
+    renderer.render(CompVNode, document.querySelector('#app'));
+    setTimeout(() => {
+        debugger
+        renderer.render(CompVNode2, document.querySelector('#app'));
+    }, 3000)
+</script>
