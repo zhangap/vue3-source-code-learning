@@ -89,6 +89,10 @@ function readonly(obj) {
   return createReactive(obj, false, true)
 }
 
+export function shallowReadonly(obj) {
+  return createReactive(obj, true, true);
+}
+
 /**
  * 创建一个响应式
  * @param data

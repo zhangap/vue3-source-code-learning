@@ -1,4 +1,4 @@
-import {reactive, effect, shallowReactive} from "./reactive.js";
+import {reactive, effect, shallowReactive, shallowReadonly} from "./reactive.js";
 import {queueJob} from "./queue.js";
 // 快速diff算法 + 组件化
 import {createText, createElement, setText, insert, setElementText} from './browserMethod.js'
@@ -95,10 +95,11 @@ function createRenderer(options) {
         // 通过vnode获取组件的选项对象，即vnode.type
         const componentOptions = vnode.type;
         //获取组件的渲染函数
-        const {
+        let {
             render,
             data,
             props: propsOption,
+            setup,
             beforeCreate = () => {
             },
             created = () => {
@@ -117,9 +118,10 @@ function createRenderer(options) {
         beforeCreate();
 
         // 调用函数 data得到原始值，并调用reactive函数将其包装为响应式数据
-        const state = reactive(data());
+        const state = reactive(data ? data() : {});
 
         const [props, attrs] = resolveProps(propsOption, vnode.props);
+        const slots = vnode.children || {};
 
         //定义组件实例，一个组件实例本质上就是一个对象，它包含与组件有关的状态信息
         const instance = {
@@ -129,6 +131,48 @@ function createRenderer(options) {
             isMounted: false,
             // 组件自身所渲染的内容，即子树
             subTree: null,
+            // 将插槽添加到组件实例上
+            slots,
+            // 在组件实例中添加mounted数组，用来存储通过onMounted函数注册的生命周期钩子函数
+            mounted: []
+        }
+
+        /**
+         * 定义emit函数，它接收两个参数
+         * @param event 事件名称
+         * @param payload 传递给事件处理函数的参数
+         */
+        function emit(event, ...payload) {
+            const eventName = `on${event[0].toUpperCase()}` + event.slice(1);
+            // 根据处理后的事件名称去props中寻找对应的事件处理函数
+            const handler = instance.props[eventName];
+            if (handler) {
+                handler(...payload);
+            } else {
+                console.error('事件不存在');
+            }
+        }
+        //setupContext，由于我们还没有讲解emit和slots，所以暂时只需要attrs
+        const setupContext = {attrs, emit, slots}
+        //setupState用来存储由setup返回的数据
+        let setupState = null;
+        // setup
+        if (setup && typeof setup === 'function') {
+            setCurrentInstance(instance)
+            // 调用setup函数，将只读版本的props作为第一个参数传递，避免用户以外地址修改为props的值
+            const setupResult = setup(shallowReadonly(instance.props), setupContext)
+
+            //如果setup函数的返回值是函数，则将其作为渲染函数
+            if (typeof setupResult === "function") {
+                //报告冲突
+                if (render) console.error('setup函数返回渲染函数，render选项将被忽略');
+                render = setupResult
+            } else {
+                // 如果setup的返回值不是函数，则作为数据状态赋值给setupState
+                setupState = setupResult;
+            }
+            // 在setup函数执行完毕后，重置当前实例
+            setCurrentInstance(null);
         }
         // 将组件实例设置到vnode上，用于后续更新
         vnode.component = instance;
@@ -137,11 +181,14 @@ function createRenderer(options) {
         const renderContext = new Proxy(instance, {
             get(target, p, receiver) {
                 const {state, props} = target;
-
+                if(p === '$slots') return slots;
                 if (state && p in state) {
                     return state[p];
                 } else if (p in props) {
                     return props[p];
+                } else if (setupState && p in setupState) {
+                    //渲染上下文需要增加对setupState的支持
+                    return setupState[p];
                 } else {
                     console.error('不存在')
                 }
@@ -152,6 +199,9 @@ function createRenderer(options) {
                     state[p] = newValue;
                 } else if (p in props) {
                     console.error('属性只读')
+                } else if (setupState && p in setupState) {
+                    // 渲染上下文需要增加对setupState的支持
+                    setupState[p] = newValue;
                 } else {
                     console.error('不存在')
                 }
@@ -171,6 +221,10 @@ function createRenderer(options) {
                 patch(null, subTree, container, anchor);
                 instance.isMounted = true;
                 mounted.call(renderContext);
+                //遍历instance.mounted数组并逐个执行即可
+                instance.mounted && instance.mounted.forEach(hook => {
+                    hook.call(renderContext);
+                })
             } else {
                 beforeUpdate();
                 patch(instance.subTree, subTree, container, anchor);
@@ -191,7 +245,6 @@ function createRenderer(options) {
      * @param anchor
      */
     function patchComponent(n1, n2, anchor) {
-        debugger
         const instance = (n2.component = n1.component);
         //获取当前的props数据
         const props = instance.props;
@@ -229,12 +282,13 @@ function createRenderer(options) {
      * @param options
      * @param propsData
      */
-    function resolveProps(options, propsData) {
+    function resolveProps(options = {}, propsData) {
         const props = {};
         const attrs = {};
         //遍历为组件传递的props数据
         for (const key in propsData) {
-            if (key in options) {
+            // 以字符串on开头的props,无论是否显示地声明，都将其添加到props数据中，而不是添加到attrs中
+            if (key in options || key.startsWith('on')) {
                 props[key] = propsData[key]
             } else {
                 attrs[key] = propsData[key];
@@ -242,7 +296,6 @@ function createRenderer(options) {
         }
         return [props, attrs]
     }
-
     //元素打补丁
     function patchElement(n1, n2) {
         const el = n2.el = n1.el;
@@ -527,6 +580,24 @@ function patchProps(el, key, preValue, nextValue) {
 //格式化class
 function normalizeClass() {
 
+}
+
+// 全局变量，存储当前正在被初始化的组件实例
+let currentInstance = null;
+//该方法接收组件实例作为参数，并将实例设置为currentInstance
+function setCurrentInstance(instance) {
+    currentInstance = instance;
+}
+/**
+ * onMounted函数的实现
+ * @param fn
+ */
+function onMounted(fn) {
+    if(currentInstance) {
+        currentInstance.onMounted.push(fn);
+    } else {
+        console.log('onMounted函数只能在setup函数中使用')
+    }
 }
 
 

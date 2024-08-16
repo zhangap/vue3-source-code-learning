@@ -8,54 +8,111 @@
 <div id="app"></div>
 </body>
 </html>
-<script src="./lib/reactivity.global.js"></script>
+<!--<script src="./lib/reactivity.global.js"></script>-->
 <script type="module">
     import {renderer} from "./js/render.fast.component.js";
 
+    // const MyComponent = {
+    //     name: 'MyComponent',
+    //     props: {
+    //       title:String,
+    //     },
+    //     // 用data函数来定义组件自身的状态
+    //     data() {
+    //       return {
+    //           foo: 'hello world'
+    //       }
+    //     },
+    //     mounted() {
+    //         console.log('mounted钩子函数执行');
+    //         setTimeout(() => {
+    //             this.foo = '你好，世界';
+    //         },1000)
+    //
+    //     },
+    //     render() {
+    //         return {
+    //             type: 'div',
+    //             children: `foo的值是：${this.foo}; title=${this.title}`
+    //         }
+    //     }
+    // };
+    //
+    //
+    // const CompVNode = {
+    //     type: MyComponent,
+    //     props: {
+    //         title: 'A Big Title'
+    //     }
+    // }
+    //
+    // const CompVNode2 = {
+    //     type: MyComponent,
+    //     props: {
+    //         title: 'A Small Title'
+    //     }
+    // }
+    //
+    // renderer.render(CompVNode, document.querySelector('#app'));
+    // setTimeout(() => {
+    //     debugger
+    //     renderer.render(CompVNode2, document.querySelector('#app'));
+    // }, 3000)
+
+    //setup演示
+    // const Comp = {
+    //     setup(props, {emit}) {
+    //         return () => {
+    //             return {
+    //                 type: 'div', children: 'hello', props: {
+    //                     onClick() {
+    //                        console.log('div被点击了');
+    //                        emit('click', 'hello')
+    //                     }
+    //                 }
+    //             }
+    //         }
+    //     },
+    // }
+    // const compVNode = {
+    //     type: Comp,
+    //     props: {
+    //         onClick(val) {
+    //             alert(val);
+    //         }
+    //     }
+    // }
+    // renderer.render(compVNode, document.querySelector('#app'))
+
+
+    //插槽演示
     const MyComponent = {
         name: 'MyComponent',
-        props: {
-          title:String,
-        },
-        // 用data函数来定义组件自身的状态
-        data() {
-          return {
-              foo: 'hello world'
-          }
-        },
-        mounted() {
-            console.log('mounted钩子函数执行');
-            setTimeout(() => {
-                this.foo = '你好，世界';
-            },1000)
-
-        },
         render() {
             return {
                 type: 'div',
-                children: `foo的值是：${this.foo}; title=${this.title}`
+                children:[
+                    {type: 'header', children: [this.$slots.header()]},
+                    {type: 'body', children: [this.$slots.body()]},
+                    {type: 'footer', children: [this.$slots.footer()]},
+                ]
             }
         }
-    };
-
-
-    const CompVNode = {
+    }
+    const MyParentComponent = {
         type: MyComponent,
-        props: {
-            title: 'A Big Title'
+        children: {
+            header() {
+                return {type: 'h1', children: '我是标题'}
+            },
+            body() {
+                return {type: 'selection', children: '我是内容'}
+            },
+            footer() {
+                return {type: 'p', children: '我是底部'}
+            }
         }
     }
 
-    const CompVNode2 = {
-        type: MyComponent,
-        props: {
-            title: 'A Small Title'
-        }
-    }
-
-    renderer.render(CompVNode, document.querySelector('#app'));
-    setTimeout(() => {
-        debugger
-        renderer.render(CompVNode2, document.querySelector('#app'));
-    }, 3000)
+    renderer.render(MyParentComponent, document.querySelector('#app'));
 </script>
