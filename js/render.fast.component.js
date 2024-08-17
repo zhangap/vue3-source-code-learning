@@ -74,7 +74,8 @@ function createRenderer(options) {
                 // 如果旧vnode存在，则，则只需要更新Fragment的children即可
                 patchChildren(n1, n2, container);
             }
-        } else if (typeof type === 'object') {
+        } else if (typeof type === 'object' || typeof type === 'function') {
+            //组件或者是函数式组件
             if (!n1) {
                 mountComponent(n2, container, anchor);
             } else {
@@ -93,7 +94,17 @@ function createRenderer(options) {
      */
     function mountComponent(vnode, container, anchor) {
         // 通过vnode获取组件的选项对象，即vnode.type
-        const componentOptions = vnode.type;
+        let componentOptions = vnode.type;
+
+        // 检查是否是函数式组件(函数式组件特殊处理)
+        const isFunctional = typeof vnode.type === 'function';
+        if (isFunctional) {
+            componentOptions = {
+                render: vnode.type,
+                props: vnode.type.props,
+            }
+        }
+
         //获取组件的渲染函数
         let {
             render,
@@ -152,6 +163,7 @@ function createRenderer(options) {
                 console.error('事件不存在');
             }
         }
+
         //setupContext，由于我们还没有讲解emit和slots，所以暂时只需要attrs
         const setupContext = {attrs, emit, slots}
         //setupState用来存储由setup返回的数据
@@ -181,7 +193,7 @@ function createRenderer(options) {
         const renderContext = new Proxy(instance, {
             get(target, p, receiver) {
                 const {state, props} = target;
-                if(p === '$slots') return slots;
+                if (p === '$slots') return slots;
                 if (state && p in state) {
                     return state[p];
                 } else if (p in props) {
@@ -296,6 +308,7 @@ function createRenderer(options) {
         }
         return [props, attrs]
     }
+
     //元素打补丁
     function patchElement(n1, n2) {
         const el = n2.el = n1.el;
@@ -510,7 +523,7 @@ function createRenderer(options) {
         if (vnode.type === Fragment) {
             vnode.children.forEach(child => unmount(child));
             return
-        } else if(typeof vnode.type === 'object') {
+        } else if (typeof vnode.type === 'object') {
             //对于组件的卸载，本质上要卸载组件爱你所渲染的内容，即subTree
             unmount(vnode.component.subTree);
             return;
@@ -588,16 +601,18 @@ function normalizeClass() {
 
 // 全局变量，存储当前正在被初始化的组件实例
 let currentInstance = null;
+
 //该方法接收组件实例作为参数，并将实例设置为currentInstance
 function setCurrentInstance(instance) {
     currentInstance = instance;
 }
+
 /**
  * onMounted函数的实现
  * @param fn
  */
 function onMounted(fn) {
-    if(currentInstance) {
+    if (currentInstance) {
         currentInstance.onMounted.push(fn);
     } else {
         console.log('onMounted函数只能在setup函数中使用')
