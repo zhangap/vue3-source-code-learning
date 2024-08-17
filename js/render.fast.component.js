@@ -74,6 +74,19 @@ function createRenderer(options) {
                 // 如果旧vnode存在，则，则只需要更新Fragment的children即可
                 patchChildren(n1, n2, container);
             }
+        } else if (typeof type === "object" && type.__isTeleport) {
+            // 组件选项中如果存在 __isTeleport 标识，则它是 Teleport 组件，
+            // 调用 Teleport 组件选项中的 process 函数将控制权交接出去
+            // 传递给 process 函数的第五个参数是渲染器的一些内部方法
+            type.process(n1, n2, container, anchor, {
+                patch,
+                patchChildren,
+                unmount,
+                // 用来移动被Teleport的内容
+                move(vnode, container, anchor) {
+                    insert(vnode.component ? vnode.component.subTree.el : vnode.el, container, anchor)
+                }
+            })
         } else if (typeof type === 'object' || typeof type === 'function') {
             //组件或者是函数式组件
             if (!n1) {
@@ -157,17 +170,16 @@ function createRenderer(options) {
 
         //检查当前要挂载的组件是否是keepAlive组件
         const isKeepAlive = vnode.type.__isKeepAlive;
-        if(isKeepAlive) {
+        if (isKeepAlive) {
             // 在keepAlive组件实例上添加keepAliveCtx对象
             instance.keepAliveCtx = {
-                move(vnode,container,anchor) {
+                move(vnode, container, anchor) {
                     // 本质上是将组件爱你渲染的内容移动到指定容器中，即隐藏容器中
                     insert(vnode.component.subTree.el, container, anchor);
                 },
                 createElement
             }
         }
-
 
 
         /**
