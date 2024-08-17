@@ -77,7 +77,12 @@ function createRenderer(options) {
         } else if (typeof type === 'object' || typeof type === 'function') {
             //组件或者是函数式组件
             if (!n1) {
-                mountComponent(n2, container, anchor);
+                // 如果该组件已经被KeepAlive,则不会重新挂载它，而是会调用_activate来激活它
+                if (n2.keptAlive) {
+                    n2.keepAliveInstance._activate(n2, container, anchor);
+                } else {
+                    mountComponent(n2, container, anchor);
+                }
             } else {
                 patchComponent(n1, n2, anchor);
             }
@@ -145,8 +150,25 @@ function createRenderer(options) {
             // 将插槽添加到组件实例上
             slots,
             // 在组件实例中添加mounted数组，用来存储通过onMounted函数注册的生命周期钩子函数
-            mounted: []
+            mounted: [],
+            //只有keepAlive组件的实例下会有keepAliveCtx属性
+            keepAliveCtx: null
         }
+
+        //检查当前要挂载的组件是否是keepAlive组件
+        const isKeepAlive = vnode.type.__isKeepAlive;
+        if(isKeepAlive) {
+            // 在keepAlive组件实例上添加keepAliveCtx对象
+            instance.keepAliveCtx = {
+                move(vnode,container,anchor) {
+                    // 本质上是将组件爱你渲染的内容移动到指定容器中，即隐藏容器中
+                    insert(vnode.component.subTree.el, container, anchor);
+                },
+                createElement
+            }
+        }
+
+
 
         /**
          * 定义emit函数，它接收两个参数
@@ -524,8 +546,13 @@ function createRenderer(options) {
             vnode.children.forEach(child => unmount(child));
             return
         } else if (typeof vnode.type === 'object') {
-            //对于组件的卸载，本质上要卸载组件爱你所渲染的内容，即subTree
-            unmount(vnode.component.subTree);
+            // 如果是被keepAlive包裹的组件，我们不应该真的卸载它，而调用_deActive函数，使其失活
+            if (vnode.shouldKeepAlive) {
+                vnode.keepAliveInstance._deActive(vnode);
+            } else {
+                //对于组件的卸载，本质上要卸载组件爱你所渲染的内容，即subTree
+                unmount(vnode.component.subTree);
+            }
             return;
         }
         const parent = vnode.el.parentNode;
