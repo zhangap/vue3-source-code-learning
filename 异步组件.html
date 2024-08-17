@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>异步组件.html</title>
+</head>
+<body>
+
+</body>
+</html>
+<!--<script src="./lib/reactivity.global.js"></script>-->
+<script type="module">
+  //模拟fetch
+  function fetch() {
+    return new Promise((resolve, reject) => {
+      setTimeout(() => {
+        setTimeout(() => {
+          reject('error')
+        },1000)
+      })
+    })
+  }
+
+  /**
+   * 重试函数
+   * @param onError
+   */
+  export function load(onError) {
+    const p = fetch();
+
+    return p.catch(err => {
+      return new Promise((resolve, reject) => {
+        const retry = () => resolve(load(onError));
+        const fail = () => reject(err);
+        onError(retry, fail);
+      })
+    })
+
+  }
+
+  load((retry, fail) => {
+    debugger
+    retry();
+  })
+</script>

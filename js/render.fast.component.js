@@ -4,11 +4,11 @@ import {queueJob} from "./queue.js";
 import {createText, createElement, setText, insert, setElementText} from './browserMethod.js'
 import {lis} from "./lis.js";
 // 文本节点
-const Text = Symbol('text');
+export const Text = Symbol('text');
 // 注释节点
-const Comment = Symbol('comment');
+export const Comment = Symbol('comment');
 // 虚拟节点
-const Fragment = Symbol('fragment');
+export const Fragment = Symbol('fragment');
 
 // const { reactive, effect, shallowReactive} = VueReactivity
 
@@ -510,6 +510,10 @@ function createRenderer(options) {
         if (vnode.type === Fragment) {
             vnode.children.forEach(child => unmount(child));
             return
+        } else if(typeof vnode.type === 'object') {
+            //对于组件的卸载，本质上要卸载组件爱你所渲染的内容，即subTree
+            unmount(vnode.component.subTree);
+            return;
         }
         const parent = vnode.el.parentNode;
         if (parent) parent.removeChild(vnode.el);
