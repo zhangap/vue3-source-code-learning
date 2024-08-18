@@ -548,8 +548,18 @@ function createRenderer(options) {
                 patchProps(el, key, null, vnode.props[key]);
             }
         }
+
+        //判断一个VNode是否需要过渡
+        const needTransition = vnode.transition;
+        if(needTransition) {
+            needTransition.beforeEnter(el);
+        }
         // 在插入节点时，将锚点元素透传给insert函数
         insert(el, container, anchor);
+
+        if(needTransition) {
+            needTransition.enter(el);
+        }
     }
 
     // 卸载
@@ -568,7 +578,19 @@ function createRenderer(options) {
             return;
         }
         const parent = vnode.el.parentNode;
-        if (parent) parent.removeChild(vnode.el);
+        if (parent){
+            const performRemove = () => parent.removeChild(vnode.el);
+            const needTransition = vnode.transition;
+            if(needTransition) {
+                // 如果需要过渡处理，则调用 transition.leave 钩子，
+                // 同时将 DOM 元素和 performRemove 函数作为参数传递
+                vnode.transition.leave(vnode.el, performRemove);
+            } else {
+                // 如果不需要过渡，则直接处理
+                performRemove();
+            }
+
+        }
     }
 
     return {

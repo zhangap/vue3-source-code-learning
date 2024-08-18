@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>原生DOM过度动画</title>
+    <style>
+        .box {
+            width: 100px;
+            height: 100px;
+            background: red;
+        }
+
+        /*初始状态*/
+        .enter-from {
+            transform: translateX(200px);
+        }
+
+        /*结束状态*/
+        .enter-to {
+            transform: translateX(0);
+        }
+
+        /*运动过程*/
+        .enter-active {
+            transition: transform 1s ease-in-out;
+        }
+
+        /*离场动画*/
+        .leave-from {
+            transform: translateX(0);
+        }
+
+        /*结束状态*/
+        .leave-to {
+            transform: translateX(200px);
+        }
+
+        /*过渡过程*/
+        .leave-active {
+            transition: transform 2s ease-out;
+        }
+    </style>
+</head>
+<body>
+</body>
+</html>
+<script>
+    window.onload = () => {
+        const el = document.createElement('div');
+        el.classList.add('box');
+
+        //在DOM元素被添加到页面之前，将初始状态的运动过程定义到元素上
+        el.classList.add('enter-from');
+        el.classList.add('enter-active');
+        //将元素添加到body上
+        document.body.appendChild(el);
+
+        //在下一帧切换元素的状态
+        requestAnimationFrame(() => {
+            requestAnimationFrame(() => {
+                el.classList.remove('enter-from');
+                el.classList.add('enter-to');
+            });
+            //监听transitionend事件完成收尾工作
+            el.addEventListener('transitionend', () => {
+                console.log('元素运动完毕');
+                el.classList.remove('enter-to');
+                el.classList.add('enter-active');
+            })
+
+        });
+
+        el.addEventListener('click', () => {
+
+            el.classList.add('leave-from');
+            el.classList.add('leave-active');
+
+            requestAnimationFrame(() => {
+                requestAnimationFrame(() => {
+                    el.classList.remove('leave-from');
+                    el.classList.add('leave-to');
+                    el.addEventListener('transitionend', () => {
+                        el.parentNode.removeChild(el);
+                    })
+                });
+            })
+        })
+    }
+</script>
