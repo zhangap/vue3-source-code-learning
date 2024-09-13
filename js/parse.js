@@ -53,7 +53,7 @@ export function parse(str) {
 }
 
 //遍历节点
-function traverseNode(ast, context) {
+export function traverseNode(ast, context) {
     // 当前节点
     // const currentNode = ast;
     // 设置当前转换的节点信息
@@ -71,7 +71,7 @@ function traverseNode(ast, context) {
         const onExit = transforms[i](context.currentNode, context);
 
         // 如果有退出阶段的回调函数，则把函数添加到exitFns数组中
-        if(onExit && typeof onExit === 'function') {
+        if (onExit && typeof onExit === 'function') {
             exitFns.push(onExit);
         }
 
@@ -98,68 +98,72 @@ function traverseNode(ast, context) {
 }
 
 
-export function transform(ast) {
-    // 在transform函数内创建context对象
-    const context = {
-        // 增加currentNode,用来存储当前正在转换的节点
-        currentNode: null,
-        // 增加childIndex,用来存储当前节点在父节点的children中的位置索引
-        childIndex: 0,
-        // 增加parent, 用来存储当前转换节点的父节点
-        parent: null,
-        nodeTransforms: [
-            transformElement,
-            transformText,
-        ],
-        // 用于替换节点的函数，接收新的节点作为参数
-        replaceNode(node) {
-            context.parent.children[context.childIndex] = node;
-            context.currentNode = node;
-        },
-        // 用于删除当前节点
-        removeNode(node) {
-            if (context.parent) {
-                // 调用数组的splice方法，根据当前节点的索引删除当前节点
-                context.parent.children.splice(context.childIndex, 1)
-                context.currentNode = null;
-            }
-        }
-    }
-    // 调用traverseNode完成转换
-    traverseNode(ast, context);
-}
+// export function transform(ast) {
+//     // 在transform函数内创建context对象
+//     const context = {
+//         // 增加currentNode,用来存储当前正在转换的节点
+//         currentNode: null,
+//         // 增加childIndex,用来存储当前节点在父节点的children中的位置索引
+//         childIndex: 0,
+//         // 增加parent, 用来存储当前转换节点的父节点
+//         parent: null,
+//         nodeTransforms: [
+//             transformRoot,
+//             transformElement,
+//             transformText,
+//         ],
+//         // 用于替换节点的函数，接收新的节点作为参数
+//         replaceNode(node) {
+//             context.parent.children[context.childIndex] = node;
+//             context.currentNode = node;
+//         },
+//         // 用于删除当前节点
+//         removeNode(node) {
+//             if (context.parent) {
+//                 // 调用数组的splice方法，根据当前节点的索引删除当前节点
+//                 context.parent.children.splice(context.childIndex, 1)
+//                 context.currentNode = null;
+//             }
+//         }
+//     }
+//     // 调用traverseNode完成转换
+//     traverseNode(ast, context);
+// }
+
 
 /**
  * 转换element节点
  * @param node
  */
-function transformElement(node) {
-    console.log('transformElement-进入阶段')
-    if (node.type === 'Element' && node.tag === 'p') {
-        node.tag = 'h1'
-    }
-    return () => {
-        console.log('transformElement-退出阶段')
-    }
-}
+// function transformElement(node) {
+//     console.log('transformElement-进入阶段')
+//     if (node.type === 'Element' && node.tag === 'p') {
+//         node.tag = 'h1'
+//     }
+//     return () => {
+//         console.log('transformElement-退出阶段')
+//     }
+// }
+//
+// /**
+//  * 转换文本节点
+//  * @param node
+//  */
+// function transformText(node, context) {
+//     if (node.type === 'Text' && node.content) {
+//         console.log('transformText进入阶段')
+//         node.content = node.content.repeat(2)
+//         // context.replaceNode({
+//         //     type: 'Element',
+//         //     tag: 'span'
+//         // })
+//     }
+//     return () => {
+//         console.log('transformText退出阶段')
+//     }
+// }
 
-/**
- * 转换文本节点
- * @param node
- */
-function transformText(node, context) {
-    if (node.type === 'Text' && node.content) {
-        console.log('transformText进入阶段')
-        node.content = node.content.repeat(2)
-        // context.replaceNode({
-        //     type: 'Element',
-        //     tag: 'span'
-        // })
-    }
-    return () => {
-        console.log('transformText退出阶段')
-    }
-}
+
 
 // 工具函数
 export function dump(node, indent = 0) {

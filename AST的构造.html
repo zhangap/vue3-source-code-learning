@@ -10,6 +10,7 @@
 </html>
 <script type="module">
     import {parse, dump, transform} from "./js/parse.js";
+    debugger
     const template = `<div><p>Vue</p><p>Template</p></div>`;
     const ast = parse(template)
     // console.log(ast)
@@ -18,5 +19,5 @@
 
     console.log('-----------------')
     console.log(transform(ast))
-    console.log(dump(ast));
+    // console.log(dump(ast));
 </script>
