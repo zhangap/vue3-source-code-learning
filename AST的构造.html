@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>AST的构造</title>
+</head>
+<body>
+
+</body>
+</html>
+<script type="module">
+    import {parse, dump, transform} from "./js/parse.js";
+    const template = `<div><p>Vue</p><p>Template</p></div>`;
+    const ast = parse(template)
+    console.log(ast)
+    console.log(dump(ast))
+
+
+    console.log('-----------------')
+    console.log(transform(ast))
+</script>
