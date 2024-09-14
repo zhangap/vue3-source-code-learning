@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>递归下降算法构造AST模板.html</title>
+</head>
+<body>
+
+</body>
+</html>
+<script type="module">
+    import {parse} from "./js/递归下降算法构造模板AST.js";
+
+    let tpl = `<div>foo {{bar}} baz</div>`;
+
+    const ast = parse(tpl);
+    console.log(ast);
+
+    tpl = '<div>foo <!--这个是注释节点--> baz</div>';
+    console.log(parse(tpl))
+</script>
